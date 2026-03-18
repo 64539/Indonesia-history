@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { model } from "@/lib/gemini";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { chapters } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+export const dynamic = 'force-dynamic';
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 20;
@@ -21,20 +22,32 @@ const ChatRequestSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    // Check if API key is available
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      return NextResponse.json(
+        { error: "AI service unavailable" },
+        { status: 503 }
+      );
+    }
+
+    const { model } = await import("@/lib/gemini");
+
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
     const now = Date.now();
     const prev = reqBuckets.get(ip);
     if (!prev || now - prev.t > RATE_LIMIT_WINDOW_MS) {
       reqBuckets.set(ip, { c: 1, t: now });
+    } else if (prev.c >= RATE_LIMIT_MAX) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded" },
+        { status: 429 }
+      );
     } else {
-      if (prev.c + 1 > RATE_LIMIT_MAX) {
-        return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
-      }
-      prev.c += 1;
-      reqBuckets.set(ip, prev);
+      reqBuckets.set(ip, { c: prev.c + 1, t: now });
     }
-    const body = await req.json();
-    const parsed = ChatRequestSchema.safeParse(body);
+
+    const body = await req.text();
+    const parsed = ChatRequestSchema.safeParse(JSON.parse(body));
 
     if (!parsed.success) {
       return NextResponse.json(

@@ -4,6 +4,8 @@ import { users } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { cookies } from "next/headers"
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const cookieStore = await cookies()
