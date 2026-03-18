@@ -13,13 +13,13 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, userId),
-    })
-
-    if (!user) {
+    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1)
+    
+    if (!userResult.length) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
+
+    const user = userResult[0]
 
     return NextResponse.json({
       id: user.id,

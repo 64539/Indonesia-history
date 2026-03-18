@@ -63,8 +63,13 @@ export default async function EditMateriPage({ params }: EditMateriPageProps) {
     category: chapter.grade,
     videoUrl: chapter.videoUrl || "",
     content: theory,
-    status: chapter.status || "Draft",
-    artifacts: artifacts || [],
+    status: (chapter.status || "Draft") as "Draft" | "Published",
+    artifacts: artifacts?.map(a => ({
+      name: a.title,
+      image: "", // Timeline items don't have images, map to empty string
+      description: a.description,
+      year: a.year
+    })) || [],
     timeline: timelineData.map(t => ({
       year: t.year,
       title: t.title,

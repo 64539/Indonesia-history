@@ -13,52 +13,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email dan password diperlukan" }, { status: 400 })
     }
 
-    let user: any = null
-    let lastErr: any = null
-    for (let i = 0; i < 2; i++) {
-      try {
-        user = await db.query.users.findFirst({
-          where: eq(users.email, email.toLowerCase()),
-        })
-        lastErr = null
-        break
-      } catch (e) {
-        lastErr = e
-        await new Promise(r => setTimeout(r, 200))
-      }
-    }
-    if (lastErr) throw lastErr
-
-    if (!user || !user.password) {
-      return NextResponse.json({ error: "Email atau password salah" }, { status: 401 })
-    }
-
-    const isValid = await bcrypt.compare(password, user.password)
-
-    if (!isValid) {
-      return NextResponse.json({ error: "Email atau password salah" }, { status: 401 })
-    }
-
-    // Set cookies for simple auth
-    const response = NextResponse.json({ success: true, role: user.role, name: user.name })
+    const userResult = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1)
     
-    // In production, sign a JWT here
-    response.cookies.set("auth-token", "valid-session", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 1 week
+    if (!userResult.length || !userResult[0].password) {
+      return NextResponse.json({ error: "Email atau password salah" }, { status: 401 })
+    }
+
+    const user = userResult[0]
+    const isPasswordValid = await bcrypt.compare(password, user.password || "")
+
+    if (!isPasswordValid) {
+      return NextResponse.json({ error: "Email atau password salah" }, { status: 401 })
+    }
+
+    const response = NextResponse.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      }
     })
 
-    response.cookies.set("user-id", user.id, {
+    response.cookies.set("auth-token", JSON.stringify({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    }), {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-    })
-
-    response.cookies.set("user-role", user.role, {
-      httpOnly: false, // Accessible by client for UI logic
       secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,

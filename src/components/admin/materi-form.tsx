@@ -38,7 +38,7 @@ const formSchema = z.object({
   content: z.string().min(10, {
     message: "Konten materi minimal 10 karakter.",
   }),
-  status: z.enum(["Draft", "Published"]).default("Draft"),
+  status: z.enum(["Draft", "Published"]).optional(),
   artifacts: z.array(
     z.object({
       name: z.string().min(1),
@@ -90,7 +90,7 @@ export function MateriForm({ initialData }: MateriFormProps) {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: initialData?.title || "",
@@ -108,7 +108,7 @@ export function MateriForm({ initialData }: MateriFormProps) {
     try {
       const content = JSON.stringify({
         theory: values.content,
-        artifacts: artifacts,
+        artifacts: values.artifacts || [],
       })
       const payload = { 
         title: values.title,

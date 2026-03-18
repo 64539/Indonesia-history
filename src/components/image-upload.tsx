@@ -33,7 +33,7 @@ export function ImageUpload({
   const [isUploading, setIsUploading] = React.useState(false)
   const [preview, setPreview] = React.useState(value)
   const [isAlertOpen, setIsAlertOpen] = React.useState(false)
-  const [invalidUrlType, setInvalidUrlType] = React.useState<'google-drive' | 'social-media' | 'invalid'>('invalid')
+  const [invalidUrlType, setInvalidUrlType] = React.useState<'google-drive' | 'social-media' | 'invalid' | null>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {

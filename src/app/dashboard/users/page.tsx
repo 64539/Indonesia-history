@@ -73,7 +73,7 @@ export default function UserManagementPage() {
 
   // Redirect if not admin
   useEffect(() => {
-    if (!canManageUsers(role)) {
+    if (!canManageUsers(role as any)) {
       router.push("/dashboard")
     }
   }, [role, router])
@@ -107,7 +107,7 @@ export default function UserManagementPage() {
   }
 
   useEffect(() => {
-    if (canManageUsers(role)) {
+    if (canManageUsers(role as any)) {
       fetchUsers()
     }
   }, [searchTerm, role])
@@ -142,7 +142,7 @@ export default function UserManagementPage() {
     }
   }
 
-  if (!canManageUsers(role)) {
+  if (!canManageUsers(role as any)) {
     return null // Or loading spinner while redirecting
   }
 

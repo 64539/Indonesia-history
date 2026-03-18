@@ -17,11 +17,19 @@ import {
 interface InvalidUrlAlertProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  urlType: 'google-drive' | 'social-media' | 'invalid'
+  urlType: 'google-drive' | 'social-media' | 'invalid' | null
 }
 
 export function InvalidUrlAlert({ open, onOpenChange, urlType }: InvalidUrlAlertProps) {
   const getAlertContent = () => {
+    if (!urlType) {
+      return {
+        title: "Tautan Gambar Tidak Valid",
+        message: "Tautan yang Anda masukkan tidak merujuk ke file gambar yang valid. Silakan periksa kembali tautan atau gunakan fitur unggah gambar.",
+        icon: <AlertTriangle className="h-5 w-5" />
+      }
+    }
+    
     switch (urlType) {
       case 'google-drive':
         return {

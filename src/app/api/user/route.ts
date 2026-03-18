@@ -17,11 +17,9 @@ export async function GET(req: Request) {
     
     // Check if admin (simplified for demo, ideally use middleware or session context)
     // We can assume if they have a valid session and can hit this endpoint, we check role in DB
-    const currentUser = await db.query.users.findFirst({
-        where: eq(users.id, userId)
-    })
+    const currentUserResult = await db.select().from(users).where(eq(users.id, userId)).limit(1)
     
-    if (!currentUser || currentUser.role !== "admin") {
+    if (!currentUserResult.length || currentUserResult[0].role !== "admin") {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -63,11 +61,9 @@ export async function POST(req: Request) {
            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
         
-        const currentUser = await db.query.users.findFirst({
-            where: eq(users.id, userId)
-        })
+        const currentUserResult = await db.select().from(users).where(eq(users.id, userId)).limit(1)
         
-        if (!currentUser || currentUser.role !== "admin") {
+        if (!currentUserResult.length || currentUserResult[0].role !== "admin") {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 })
         }
 
@@ -78,11 +74,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
         }
 
-        const existingUser = await db.query.users.findFirst({
-            where: eq(users.email, email)
-        })
+        const existingUserResult = await db.select().from(users).where(eq(users.email, email)).limit(1)
 
-        if (existingUser) {
+        if (existingUserResult.length) {
             return NextResponse.json({ error: "User already exists" }, { status: 409 })
         }
         
