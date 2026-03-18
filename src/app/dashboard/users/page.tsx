@@ -44,6 +44,8 @@ import { Plus, Search, Trash2, Edit } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
+import { canManageUsers } from "@/lib/rbac"
+import type { UserRole } from "@/lib/rbac"
 
 const userSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter"),
@@ -71,7 +73,7 @@ export default function UserManagementPage() {
 
   // Redirect if not admin
   useEffect(() => {
-    if (role && role !== "admin") {
+    if (!canManageUsers(role)) {
       router.push("/dashboard")
     }
   }, [role, router])
@@ -105,7 +107,7 @@ export default function UserManagementPage() {
   }
 
   useEffect(() => {
-    if (role === "admin") {
+    if (canManageUsers(role)) {
       fetchUsers()
     }
   }, [searchTerm, role])
@@ -140,7 +142,7 @@ export default function UserManagementPage() {
     }
   }
 
-  if (role !== "admin") {
+  if (!canManageUsers(role)) {
     return null // Or loading spinner while redirecting
   }
 

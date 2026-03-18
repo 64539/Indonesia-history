@@ -14,7 +14,7 @@ export const chapters = pgTable("chapters", {
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
   grade: text("grade").notNull(), // 'Kelas 10', 'Kelas 11', 'Kelas 12'
-  content: text("content").notNull(), // Markdown content
+  content: text("content").notNull(), // JSON string: { theory: "markdown", artifacts: [...] }
   videoUrl: text("video_url"),
   estimatedTime: integer("estimated_time").default(10), // in minutes
   authorId: text("author_id").references(() => users.id),

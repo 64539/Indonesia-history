@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Play, Maximize2, Minimize2 } from "lucide-react"
+import { SmartImage } from "@/components/smart-image"
 import { cn, getYouTubeId } from "@/lib/utils"
 
 interface VideoPlayerProps {
@@ -16,6 +17,12 @@ export function VideoPlayer({ url }: VideoPlayerProps) {
   const videoId = React.useMemo(() => {
     return getYouTubeId(url)
   }, [url])
+
+  // Get thumbnail URL
+  const thumbnailUrl = React.useMemo(() => {
+    if (!videoId) return ""
+    return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+  }, [videoId])
 
   const toggleCinemaMode = () => {
     setIsCinemaMode(!isCinemaMode)
@@ -54,12 +61,11 @@ export function VideoPlayer({ url }: VideoPlayerProps) {
       >
         {!isPlaying ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            {/* Thumbnail placeholder or just black */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} 
-              alt="Video Thumbnail" 
-              className="absolute inset-0 h-full w-full object-cover opacity-60"
+            <SmartImage
+              src={thumbnailUrl}
+              alt="Video Thumbnail"
+              aspectRatio="video"
+              className="opacity-60"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
             

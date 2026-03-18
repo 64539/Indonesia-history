@@ -1,24 +1,22 @@
 import { SidebarItem } from "@/components/layout/sidebar"
 import { db } from "@/lib/db"
 import { chapters } from "@/db/schema"
-import { contentData } from "@/lib/contentData"
-import { desc } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
 import { SidebarProvider } from "@/components/layout/sidebar-provider"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { HeaderWrapper } from "@/components/layout/header-wrapper"
 
 export async function MainLayout({ children }: { children: React.ReactNode }) {
-  let items: SidebarItem[] = contentData;
+  let items: SidebarItem[] = [];
   try {
-     const dbChapters = await db.select({
+     items = await db.select({
        slug: chapters.slug,
        title: chapters.title,
        category: chapters.grade,
-     }).from(chapters).orderBy(desc(chapters.updatedAt));
-     
-     if (dbChapters.length > 0) {
-        items = dbChapters;
-     }
+     })
+     .from(chapters)
+     .where(eq(chapters.status, "Published"))
+     .orderBy(desc(chapters.updatedAt));
   } catch (e) {
      console.error("Failed to fetch chapters for sidebar", e);
   }

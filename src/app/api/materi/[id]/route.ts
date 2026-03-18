@@ -13,7 +13,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 })
     }
     const body = await req.json()
-    const { title, category, videoUrl, content, timeline } = body
+    const { title, category, videoUrl, content, timeline, status } = body
 
     // Update chapter
     await db.update(chapters)
@@ -22,6 +22,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         grade: category,
         content,
         videoUrl,
+        status,
       })
       .where(eq(chapters.id, parsedId))
 

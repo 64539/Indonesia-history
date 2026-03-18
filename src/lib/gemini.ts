@@ -1,11 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+const apiKey = process.env.GEMINI_API_KEY;
 
 if (!apiKey) {
-  console.warn("GEMINI_API_KEY is not defined");
+  throw new Error("GEMINI_API_KEY is not defined");
 }
 
-const genAI = new GoogleGenerativeAI(apiKey || "");
+const genAI = new GoogleGenerativeAI(apiKey);
 
-export const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+export const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+export async function testGemini() {
+  const r = await model.countTokens({ contents: [{ role: "user", parts: [{ text: "ping" }]}] });
+  return Boolean(r.totalTokens || r.totalTokens === 0);
+}

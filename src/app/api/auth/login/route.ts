@@ -13,9 +13,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email dan password diperlukan" }, { status: 400 })
     }
 
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email),
-    })
+    let user: any = null
+    let lastErr: any = null
+    for (let i = 0; i < 2; i++) {
+      try {
+        user = await db.query.users.findFirst({
+          where: eq(users.email, email.toLowerCase()),
+        })
+        lastErr = null
+        break
+      } catch (e) {
+        lastErr = e
+        await new Promise(r => setTimeout(r, 200))
+      }
+    }
+    if (lastErr) throw lastErr
 
     if (!user || !user.password) {
       return NextResponse.json({ error: "Email atau password salah" }, { status: 401 })

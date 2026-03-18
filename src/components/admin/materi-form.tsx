@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash2, Video, Eye } from "lucide-react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
+import { ImageUpload } from "@/components/image-upload"
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,16 @@ const formSchema = z.object({
   content: z.string().min(10, {
     message: "Konten materi minimal 10 karakter.",
   }),
+  status: z.enum(["Draft", "Published"]).default("Draft"),
+  artifacts: z.array(
+    z.object({
+      name: z.string().min(1),
+      image: z.string().min(1, "Image is required"),
+      description: z.string().min(1),
+      year: z.string().optional(),
+      origin: z.string().optional(),
+    })
+  ).optional().default([]),
   timeline: z.array(
     z.object({
       year: z.string(),
@@ -56,6 +67,14 @@ interface MateriFormProps {
     category: string
     videoUrl: string
     content: string
+    status?: "Draft" | "Published"
+    artifacts?: {
+      name: string
+      image: string
+      description: string
+      year?: string
+      origin?: string
+    }[]
     timeline: {
       year: string
       title: string
@@ -67,6 +86,7 @@ interface MateriFormProps {
 export function MateriForm({ initialData }: MateriFormProps) {
   const router = useRouter()
   const [timelineItems, setTimelineItems] = useState(initialData?.timeline || [{ year: "", title: "", description: "" }])
+  const [artifacts, setArtifacts] = useState(initialData?.artifacts || [])
   const [previewOpen, setPreviewOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -77,6 +97,8 @@ export function MateriForm({ initialData }: MateriFormProps) {
       category: (initialData?.category as "Kelas 10" | "Kelas 11" | "Kelas 12") || "Kelas 10",
       videoUrl: initialData?.videoUrl || "",
       content: initialData?.content || "",
+      status: initialData?.status || "Draft",
+      artifacts: initialData?.artifacts || [],
       timeline: initialData?.timeline || [],
     },
   })
@@ -84,7 +106,18 @@ export function MateriForm({ initialData }: MateriFormProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
     try {
-      const payload = { ...values, timeline: timelineItems }
+      const content = JSON.stringify({
+        theory: values.content,
+        artifacts: artifacts,
+      })
+      const payload = { 
+        title: values.title,
+        category: values.category,
+        videoUrl: values.videoUrl,
+        content,
+        status: values.status,
+        timeline: timelineItems 
+      }
       const url = initialData?.id ? `/api/materi/${initialData.id}` : "/api/materi"
       const method = initialData?.id ? "PUT" : "POST"
 
@@ -121,6 +154,22 @@ export function MateriForm({ initialData }: MateriFormProps) {
     const newItems = [...timelineItems]
     newItems[index][field] = value
     setTimelineItems(newItems)
+  }
+
+  const addArtifact = () => {
+    setArtifacts([...(artifacts || []), { name: "", image: "", description: "" }])
+  }
+
+  const removeArtifact = (index: number) => {
+    const next = [...(artifacts || [])]
+    next.splice(index, 1)
+    setArtifacts(next)
+  }
+
+  const updateArtifact = (index: number, field: "name" | "image" | "description" | "year" | "origin", value: string) => {
+    const next = [...(artifacts || [])]
+    ;(next[index] as any)[field] = value
+    setArtifacts(next)
   }
 
   return (
@@ -204,7 +253,7 @@ export function MateriForm({ initialData }: MateriFormProps) {
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Isi Materi</FormLabel>
+                <FormLabel>Isi Materi (Theory)</FormLabel>
                 <FormControl>
                   <Textarea 
                     placeholder="# Judul Utama\n\nTulis materi sejarah di sini..." 
@@ -222,9 +271,85 @@ export function MateriForm({ initialData }: MateriFormProps) {
         </div>
 
         <div className="space-y-4">
+          <h3 className="text-lg font-serif font-medium text-amber-500 border-b border-amber-500/20 pb-2">
+            4. Artefak (Twin-View)
+          </h3>
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" size="sm" onClick={addArtifact} className="text-amber-500 border-amber-500/50 hover:bg-amber-500/10">
+              <Plus className="mr-2 h-4 w-4" /> Tambah Artefak
+            </Button>
+          </div>
+          <div className="space-y-4">
+            {(artifacts || []).map((a, idx) => (
+              <div key={idx} className="flex gap-4 items-start rounded-lg border p-4 bg-muted/50">
+                <div className="grid gap-4 flex-1 md:grid-cols-2">
+                  <div>
+                    <FormLabel className="text-xs">Nama</FormLabel>
+                    <Input value={a.name} onChange={(e) => updateArtifact(idx, "name", e.target.value)} placeholder="Nama artefak" />
+                  </div>
+                  <div>
+                    <FormLabel className="text-xs">Gambar</FormLabel>
+                    <ImageUpload
+                      value={a.image}
+                      onChange={(value) => updateArtifact(idx, "image", value)}
+                      placeholder="Enter image URL or upload file"
+                      aspectRatio="square"
+                      className="max-w-xs"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <FormLabel className="text-xs">Deskripsi</FormLabel>
+                    <Input value={a.description} onChange={(e) => updateArtifact(idx, "description", e.target.value)} placeholder="Deskripsi singkat..." />
+                  </div>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => removeArtifact(idx)}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-500/10 mt-6"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-serif font-medium text-amber-500 border-b border-amber-500/20 pb-2">
+            5. Status Publikasi
+          </h3>
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Draft">Draft</SelectItem>
+                    <SelectItem value="Published">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Hanya konten berstatus Published yang tampil di UI publik.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
             <h3 className="text-lg font-serif font-medium text-amber-500">
-              4. Timeline Era Builder
+              6. Timeline Era Builder
             </h3>
             <Button type="button" variant="outline" size="sm" onClick={addTimelineItem} className="text-amber-500 border-amber-500/50 hover:bg-amber-500/10">
               <Plus className="mr-2 h-4 w-4" /> Tambah Event
@@ -294,6 +419,16 @@ export function MateriForm({ initialData }: MateriFormProps) {
                  <div className="prose prose-stone dark:prose-invert max-w-none">
                     <pre className="whitespace-pre-wrap font-sans">{form.getValues().content || "Konten materi..."}</pre>
                  </div>
+                 {(artifacts || []).length > 0 && (
+                  <>
+                    <h3 className="text-xl font-serif font-semibold mt-4">Artefak</h3>
+                    <ul className="list-disc pl-6">
+                      {(artifacts || []).map((a, i) => (
+                        <li key={i}>{a.name}</li>
+                      ))}
+                    </ul>
+                  </>
+                 )}
               </div>
             </DialogContent>
           </Dialog>

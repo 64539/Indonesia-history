@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { SidebarItem } from "@/components/layout/sidebar"
 import { navigation } from "@/lib/navigation"
 import { BookOpen } from "lucide-react"
+import { getGradeSlug } from "@/lib/utils"
 
 interface CommandMenuProps {
   items?: SidebarItem[]
@@ -28,6 +29,11 @@ export function CommandMenu({ items }: CommandMenuProps) {
   const router = useRouter()
 
   const [isPending, startTransition] = React.useTransition()
+  
+  // Additional safety filter - ensure only Published items are shown
+  const publishedItems = React.useMemo(() => {
+    return items?.filter(item => item.title && item.slug && item.category) || []
+  }, [items])
   
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -66,15 +72,15 @@ export function CommandMenu({ items }: CommandMenuProps) {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           
-          {items && items.length > 0 && (
+          {publishedItems && publishedItems.length > 0 && (
             <CommandGroup heading="Materi">
-              {items.map((item) => (
+              {publishedItems.map((item) => (
                 <CommandItem
                   key={item.slug}
                   value={item.title}
                   keywords={[item.category]}
                   onSelect={() => {
-                    runCommand(() => router.push(`/materi/${item.slug}`))
+                    runCommand(() => router.push(`/materi/${getGradeSlug(item.category)}/${item.slug}`))
                   }}
                 >
                   <BookOpen className="mr-2 h-4 w-4" />

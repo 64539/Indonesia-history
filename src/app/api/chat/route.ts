@@ -3,6 +3,11 @@ import { model } from "@/lib/gemini";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { chapters } from "@/db/schema";
+import { eq } from "drizzle-orm";
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 20;
+const reqBuckets = new Map<string, { c: number; t: number }>();
 
 const ChatRequestSchema = z.object({
   message: z.string().min(1),
@@ -16,6 +21,18 @@ const ChatRequestSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+    const now = Date.now();
+    const prev = reqBuckets.get(ip);
+    if (!prev || now - prev.t > RATE_LIMIT_WINDOW_MS) {
+      reqBuckets.set(ip, { c: 1, t: now });
+    } else {
+      if (prev.c + 1 > RATE_LIMIT_MAX) {
+        return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+      }
+      prev.c += 1;
+      reqBuckets.set(ip, prev);
+    }
     const body = await req.json();
     const parsed = ChatRequestSchema.safeParse(body);
 
@@ -26,18 +43,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const { message, history } = parsed.data;
+    let { message, history } = parsed.data;
+    if (message.length > 2000) {
+      message = message.slice(0, 2000);
+    }
 
-    // Transform history to Gemini format
     let geminiHistory = (history || []).map((msg) => ({
       role: msg.role === "bot" ? "model" : "user",
       parts: [{ text: msg.content }],
     }));
 
-    // FIX: Ensure history starts with a 'user' role if it's not empty
     if (geminiHistory.length > 0 && geminiHistory[0].role !== 'user') {
-      // If the first message is model, we prepend a dummy user message or remove it.
-      // Better strategy: Remove the first message if it's from the model, as Gemini requires user first.
       geminiHistory = geminiHistory.slice(1);
     }
 
@@ -50,14 +66,16 @@ export async function POST(req: Request) {
 
     const systemPrompt = "You are an expert Indonesian Historian. Answer questions for high school students accurately and objectively. Keep your answers concise and educational.";
     
-    // Fetch context from database (RAG)
     const allChapters = await db.select({
         title: chapters.title,
         content: chapters.content,
         grade: chapters.grade
-    }).from(chapters);
+    }).from(chapters).where(eq(chapters.status, "Published")).limit(20);
 
-    const contextText = allChapters.map(c => `Title: ${c.title} (Kelas ${c.grade})\nContent: ${c.content}`).join("\n\n");
+    const contextText = allChapters.map(c => {
+      const ct = (c as any).content ? String((c as any).content).slice(0, 1000) : "";
+      return `Title: ${c.title} (Kelas ${c.grade})\nContent: ${ct}`;
+    }).join("\n\n");
 
     const ragInstruction = `
     Use the following context from our museum collection to answer the user's question. 
@@ -67,8 +85,6 @@ export async function POST(req: Request) {
     ${contextText}
     `;
 
-    // Send message with system prompt context if it's the first message or just prepend it
-    // To ensure the persona is maintained, we can prepend it to the user message
     const fullMessage = `${systemPrompt}\n${ragInstruction}\n\nUser Question: ${message}`;
 
     const result = await chat.sendMessage(fullMessage);

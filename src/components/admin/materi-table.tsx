@@ -16,6 +16,7 @@ import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { deleteMateri, seedDatabase } from "@/app/dashboard/materi/actions"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { getGradeSlug } from "@/lib/utils"
 
 interface Chapter {
   id: number
@@ -106,7 +107,7 @@ export function MateriTable({ data }: MateriTableProps) {
               <TableCell>{new Date(item.updatedAt).toLocaleDateString("id-ID")}</TableCell>
               <TableCell className="text-right space-x-2">
                 <Button variant="ghost" size="icon" asChild>
-                  <Link href={`/materi/${item.slug}`}>
+                  <Link href={`/materi/${getGradeSlug(item.grade)}/${item.slug}`}>
                     <Eye className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -127,7 +128,7 @@ export function MateriTable({ data }: MateriTableProps) {
                   onConfirm={() => handleDelete(item.id)}
                   confirmText="Hapus"
                   variant="destructive"
-                />
+                  />
               </TableCell>
             </TableRow>
           ))}

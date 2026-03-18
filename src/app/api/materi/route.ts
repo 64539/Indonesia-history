@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache"
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { title, category, videoUrl, content, timeline } = body
+    const { title, category, videoUrl, content, timeline, status } = body
 
     if (!title || !content) {
       return NextResponse.json({ error: "Judul dan konten wajib diisi" }, { status: 400 })
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
       grade: category,
       content,
       videoUrl,
+      status: status || "Draft",
       authorId: "admin", // TODO: Get from session
     }).returning({ id: chapters.id })
 

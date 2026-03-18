@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { contentData } from "@/lib/contentData"
+import { getGradeSlug } from "@/lib/utils"
 import {
   Accordion,
   AccordionContent,
@@ -23,7 +23,7 @@ type SidebarProps = React.HTMLAttributes<HTMLDivElement> & {
   items?: SidebarItem[]
 }
 
-export function Sidebar({ className, items = contentData }: SidebarProps) {
+export function Sidebar({ className, items = [] }: SidebarProps) {
   const pathname = usePathname()
   const { role } = useAuth()
 
@@ -87,11 +87,11 @@ export function Sidebar({ className, items = contentData }: SidebarProps) {
                 <AccordionContent>
                   <div className="space-y-1 pt-1">
                     {groupedContent[category].map((item) => (
-                      <Link key={item.slug} href={`/materi/${item.slug}`}>
+                      <Link key={item.slug} href={`/materi/${getGradeSlug(item.category)}/${item.slug}`}>
                         <div
                           className={cn(
                             "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ml-2",
-                            pathname === `/materi/${item.slug}`
+                            pathname === `/materi/${getGradeSlug(item.category)}/${item.slug}`
                               ? "bg-amber-500/10 text-amber-500 border-l-2 border-amber-500"
                               : "transparent border-l-2 border-transparent text-muted-foreground"
                           )}
