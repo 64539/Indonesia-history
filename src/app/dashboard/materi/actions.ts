@@ -13,6 +13,10 @@ export async function seedDatabase() {
 export async function deleteMateri(id: number) {
   try {
     await db.delete(chapters).where(eq(chapters.id, id))
+    // Kill ghost data across public + dashboard surfaces
+    revalidatePath("/")
+    revalidatePath("/materi")
+    revalidatePath("/dashboard")
     revalidatePath("/dashboard/materi")
     return { success: true }
   } catch (error) {

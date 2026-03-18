@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { chapters, timelines } from "@/db/schema"
 import { revalidatePath } from "next/cache"
+import { getGradeSlug } from "@/lib/utils"
 
 export async function POST(req: Request) {
   try {
@@ -38,8 +39,13 @@ export async function POST(req: Request) {
       )
     }
 
+    const gradeSlug = getGradeSlug(category)
+    // Kill ghost data across public + dashboard surfaces
+    revalidatePath("/")
+    revalidatePath("/materi")
+    revalidatePath("/dashboard")
     revalidatePath("/dashboard/materi")
-    revalidatePath(`/materi/${slug}`)
+    revalidatePath(`/materi/${gradeSlug}/${slug}`)
 
     return NextResponse.json({ success: true, id: newChapter.id })
   } catch (error) {

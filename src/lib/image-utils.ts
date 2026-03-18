@@ -21,39 +21,64 @@ export async function compressImage(
     const img = new Image();
 
     img.onload = () => {
-      // Calculate new dimensions
-      let { width, height } = img;
-      if (width > maxWidth) {
-        const ratio = maxWidth / width;
-        width = maxWidth;
-        height = height * ratio;
-      }
-
-      // Set canvas dimensions
-      canvas.width = width;
-      canvas.height = height;
-
-      // Draw and compress image
-      ctx?.drawImage(img, 0, 0, width, height);
-      
-      // Try WebP first, fallback to JPEG
-      const mimeType = 'image/webp';
-      const dataUrl = canvas.toDataURL(mimeType, quality);
-      
-      // Check size
-      const sizeInKB = Math.round((dataUrl.length * 3) / 4 / 1024);
-      
-      if (sizeInKB > maxSizeKB) {
-        reject(new Error(`File too large: ${sizeInKB}KB (max: ${maxSizeKB}KB)`));
+      if (!ctx) {
+        reject(new Error('Canvas not supported'));
         return;
       }
 
-      resolve({
-        dataUrl,
-        size: sizeInKB,
-        width,
-        height
-      });
+      const mimeType = 'image/webp';
+      const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+
+      const encodeAttempt = (targetMaxWidth: number, q: number) => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > targetMaxWidth) {
+          const ratio = targetMaxWidth / width;
+          width = targetMaxWidth;
+          height = Math.round(height * ratio);
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL(mimeType, q);
+        const sizeInKB = Math.round((dataUrl.length * 3) / 4 / 1024);
+        return { dataUrl, sizeInKB, width, height };
+      };
+
+      // Progressive compression: adjust quality then width until <= maxSizeKB
+      let currentMaxWidth = maxWidth;
+      let currentQuality = clamp(quality, 0.4, 0.9);
+
+      // Try a few quality steps first at the same width
+      for (let i = 0; i < 6; i++) {
+        const attempt = encodeAttempt(currentMaxWidth, currentQuality);
+        if (attempt.sizeInKB <= maxSizeKB) {
+          resolve({ dataUrl: attempt.dataUrl, size: attempt.sizeInKB, width: attempt.width, height: attempt.height });
+          return;
+        }
+        currentQuality = clamp(currentQuality - 0.08, 0.4, 0.9);
+      }
+
+      // If still too large, reduce width and retry quality ramp
+      for (let wStep = 0; wStep < 5; wStep++) {
+        currentMaxWidth = Math.max(480, Math.round(currentMaxWidth * 0.85));
+        currentQuality = clamp(quality, 0.4, 0.9);
+        for (let qStep = 0; qStep < 6; qStep++) {
+          const attempt = encodeAttempt(currentMaxWidth, currentQuality);
+          if (attempt.sizeInKB <= maxSizeKB) {
+            resolve({ dataUrl: attempt.dataUrl, size: attempt.sizeInKB, width: attempt.width, height: attempt.height });
+            return;
+          }
+          currentQuality = clamp(currentQuality - 0.08, 0.4, 0.9);
+        }
+      }
+
+      const last = encodeAttempt(currentMaxWidth, 0.4);
+      reject(new Error(`File terlalu besar setelah kompresi: ${last.sizeInKB}KB (maks: ${maxSizeKB}KB). Coba gunakan gambar dengan resolusi lebih kecil atau fitur unggah lain.`));
     };
 
     img.onerror = () => reject(new Error('Failed to load image'));

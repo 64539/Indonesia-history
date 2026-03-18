@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { chapters, timelines } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
+import { getGradeSlug } from "@/lib/utils"
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -41,12 +42,22 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       )
     }
 
+    // Kill ghost data across public + dashboard surfaces
+    revalidatePath("/")
+    revalidatePath("/materi")
+    revalidatePath("/dashboard")
     revalidatePath("/dashboard/materi")
-    
-    // Fetch the slug to be safe.
-    const chapter = await db.select().from(chapters).where(eq(chapters.id, parsedId)).limit(1)
+
+    // Revalidate the public materi detail route (grade/slug)
+    const chapter = await db
+      .select({ slug: chapters.slug, grade: chapters.grade })
+      .from(chapters)
+      .where(eq(chapters.id, parsedId))
+      .limit(1)
+
     if (chapter.length > 0) {
-        revalidatePath(`/materi/${chapter[0].slug}`)
+      const gradeSlug = getGradeSlug(chapter[0].grade)
+      revalidatePath(`/materi/${gradeSlug}/${chapter[0].slug}`)
     }
 
     return NextResponse.json({ success: true })

@@ -81,55 +81,71 @@ export function AiChatbot() {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-20 right-4 z-50 w-[350px] overflow-hidden rounded-xl border bg-background shadow-2xl sm:right-8"
+            className="fixed bottom-20 right-4 z-50 w-[360px] overflow-hidden rounded-xl border border-amber-500/30 bg-stone-950 shadow-2xl shadow-black/40 sm:right-8"
           >
-            <div className="flex items-center justify-between bg-primary p-4 text-primary-foreground">
+            <div className="flex items-center justify-between bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 p-4 text-stone-50 border-b border-amber-500/20">
               <div className="flex items-center gap-2">
-                <Bot className="h-5 w-5" />
-                <h3 className="font-semibold">Sejarawan AI</h3>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <Bot className="h-4 w-4" />
+                </div>
+                <div className="leading-tight">
+                  <h3 className="font-serif font-semibold text-amber-400">Asisten Museum</h3>
+                  <p className="text-xs text-stone-400">Sejarah Indonesia • Gemini</p>
+                </div>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 hover:bg-primary-foreground/20 text-primary-foreground"
+                className="h-8 w-8 hover:bg-white/5 text-stone-200"
                 onClick={() => setIsOpen(false)}
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <div className="h-[400px] flex flex-col">
+            <div className="h-[420px] flex flex-col">
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
                   {messages.map((msg, index) => (
                     <div
                       key={index}
                       className={cn(
-                        "flex w-max max-w-[80%] flex-col gap-2 rounded-lg px-3 py-2 text-sm break-words whitespace-pre-wrap",
+                        "flex w-max max-w-[85%] flex-col gap-2 rounded-2xl px-3.5 py-2.5 text-sm break-words whitespace-pre-wrap leading-relaxed shadow-sm",
                         msg.role === "user"
-                          ? "ml-auto bg-primary text-primary-foreground"
-                          : "bg-muted"
+                          ? "ml-auto bg-amber-500 text-stone-950"
+                          : "bg-stone-900 text-stone-100 border border-amber-500/10"
                       )}
                     >
                       {msg.content}
                     </div>
                   ))}
                   {isLoading && (
-                    <div className="flex w-max max-w-[80%] flex-col gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
-                      <span className="animate-pulse">Sedang mengetik...</span>
+                    <div className="flex w-max max-w-[85%] items-center gap-2 rounded-2xl bg-stone-900 text-stone-100 border border-amber-500/10 px-3.5 py-2.5 text-sm">
+                      <span className="inline-flex gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80 animate-bounce [animation-delay:-0.2s]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80 animate-bounce [animation-delay:-0.1s]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80 animate-bounce" />
+                      </span>
+                      <span className="text-stone-300">Sedang mengetik…</span>
                     </div>
                   )}
                   <div ref={scrollRef} />
                 </div>
               </ScrollArea>
-              <div className="border-t p-4">
+              <div className="border-t border-amber-500/20 p-4 bg-stone-950">
                 <form onSubmit={handleSubmit} className="flex gap-2">
                   <Input
                     placeholder="Tanya sejarah..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     disabled={isLoading}
+                    className="bg-stone-900 border-amber-500/20 text-stone-100 placeholder:text-stone-500 focus-visible:ring-amber-500/30"
                   />
-                  <Button type="submit" size="icon" disabled={isLoading}>
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={isLoading}
+                    className="bg-amber-500 hover:bg-amber-600 text-stone-950"
+                  >
                     <Send className="h-4 w-4" />
                   </Button>
                 </form>
@@ -143,7 +159,7 @@ export function AiChatbot() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg sm:bottom-8 sm:right-8"
+        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500 text-stone-950 shadow-lg shadow-black/30 sm:bottom-8 sm:right-8"
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </motion.button>
