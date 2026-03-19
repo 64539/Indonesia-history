@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ModeToggle } from "@/components/mode-toggle"
-import { CommandMenu } from "@/components/command-menu"
+import { MaterialSearchBar } from "@/components/search/material-search-bar"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -109,7 +109,7 @@ export function Header({ items, sidebarOpen, setSidebarOpen }: HeaderProps) {
 
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
-            <CommandMenu items={items} />
+            <MaterialSearchBar />
           </div>
           
           <div className="flex items-center gap-2">

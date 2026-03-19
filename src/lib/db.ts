@@ -19,7 +19,7 @@ if (databaseUrl) {
   sqlConn = neon(finalUrl);
   db = drizzle(sqlConn, { schema });
 } else {
-  db = new Proxy({} as any, {
+  db = new Proxy({} as unknown as ReturnType<typeof drizzle>, {
     get: () => {
       throw new Error("DATABASE_URL is not defined");
     },

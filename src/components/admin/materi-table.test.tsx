@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import React from "react"
 import { MateriTable } from "./materi-table"
+import type { ReactNode } from "react"
 
 // Mock dependencies
 const mockRefresh = vi.fn()
@@ -32,7 +33,7 @@ vi.mock("sonner", () => ({
 
 // Mock UI components that might cause issues in test environment
 vi.mock("@/components/ui/confirm-modal", () => ({
-  ConfirmModal: ({ onConfirm, trigger }: any) => (
+  ConfirmModal: ({ onConfirm, trigger }: { onConfirm: () => void; trigger: ReactNode }) => (
     <div data-testid="confirm-modal">
       {trigger}
       <button onClick={onConfirm}>Confirm Delete</button>
@@ -42,12 +43,12 @@ vi.mock("@/components/ui/confirm-modal", () => ({
 
 // Mock table components
 vi.mock("@/components/ui/table", () => ({
-  Table: ({ children }: any) => <table>{children}</table>,
-  TableHeader: ({ children }: any) => <thead>{children}</thead>,
-  TableBody: ({ children }: any) => <tbody>{children}</tbody>,
-  TableRow: ({ children }: any) => <tr>{children}</tr>,
-  TableHead: ({ children }: any) => <th>{children}</th>,
-  TableCell: ({ children }: any) => <td>{children}</td>,
+  Table: ({ children }: { children: ReactNode }) => <table>{children}</table>,
+  TableHeader: ({ children }: { children: ReactNode }) => <thead>{children}</thead>,
+  TableBody: ({ children }: { children: ReactNode }) => <tbody>{children}</tbody>,
+  TableRow: ({ children }: { children: ReactNode }) => <tr>{children}</tr>,
+  TableHead: ({ children }: { children: ReactNode }) => <th>{children}</th>,
+  TableCell: ({ children }: { children: ReactNode }) => <td>{children}</td>,
 }))
 
 const mockData = [

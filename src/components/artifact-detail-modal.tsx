@@ -4,7 +4,6 @@ import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Calendar, MapPin } from "lucide-react"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { SmartImage } from "@/components/smart-image"
 import { Artifact } from "@/components/artifact-card"
 
 interface ArtifactDetailModalProps {
@@ -15,6 +14,12 @@ interface ArtifactDetailModalProps {
 
 export function ArtifactDetailModal({ artifact, open, onOpenChange }: ArtifactDetailModalProps) {
   if (!artifact) return null
+
+  const [imgSrc, setImgSrc] = React.useState(artifact.image)
+
+  React.useEffect(() => {
+    setImgSrc(artifact.image)
+  }, [artifact.image])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -30,11 +35,13 @@ export function ArtifactDetailModal({ artifact, open, onOpenChange }: ArtifactDe
             >
               {/* Image Side */}
               <div className="relative aspect-square md:aspect-auto bg-black">
-                <SmartImage
-                  src={artifact.image}
+                <img
+                  src={imgSrc}
                   alt={artifact.name}
-                  aspectRatio="square"
                   className="w-full h-full object-cover"
+                  onError={() => setImgSrc("/placeholder-artifact.jpg")}
+                  loading="lazy"
+                  decoding="async"
                 />
                 
                 {/* Close button overlay */}

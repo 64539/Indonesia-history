@@ -46,8 +46,8 @@ export async function POST(req: Request) {
       reqBuckets.set(ip, { c: prev.c + 1, t: now });
     }
 
-    const body = await req.text();
-    const parsed = ChatRequestSchema.safeParse(JSON.parse(body));
+    const body = (await req.json()) as unknown;
+    const parsed = ChatRequestSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -77,34 +77,63 @@ export async function POST(req: Request) {
       },
     });
 
-    const systemPrompt = "You are an expert Indonesian Historian. Answer questions for high school students accurately and objectively. Keep your answers concise and educational.";
+    const systemPrompt =
+      "You are a History Assistant for the Indonesian History Museum. " +
+      "Answer in Indonesian for high school students. " +
+      "Be accurate, objective, and keep the response concise, clear, and educational. " +
+      "If the answer is not in the provided museum collection, say it politely.";
     
     const allChapters = await db.select({
-        title: chapters.title,
-        content: chapters.content,
-        grade: chapters.grade
+      title: chapters.title,
+      content: chapters.content,
+      grade: chapters.grade,
     }).from(chapters).where(eq(chapters.status, "Published")).limit(20);
 
-    const contextText = allChapters.map(c => {
-      const ct = (c as any).content ? String((c as any).content).slice(0, 1000) : "";
-      return `Title: ${c.title} (Kelas ${c.grade})\nContent: ${ct}`;
-    }).join("\n\n");
+    type ChapterContext = { title: string; content: string; grade: string };
+    const contextText = (allChapters as ChapterContext[])
+      .map((c) => {
+        const ct = c.content ? String(c.content).slice(0, 1000) : "";
+        return `Judul: ${c.title} (Kelas ${c.grade})\nKonten: ${ct}`;
+      })
+      .join("\n\n");
 
     const ragInstruction = `
-    Use the following context from our museum collection to answer the user's question. 
-    If the answer is not in the context, politely say that the information is not yet available in our collection.
-    
-    Context:
-    ${contextText}
+      Gunakan konteks koleksi museum berikut untuk menjawab pertanyaan pengguna.
+      Jika informasi tidak ada di konteks, katakan dengan sopan bahwa belum tersedia dalam koleksi museum kami.
+
+      Konteks:
+      ${contextText}
     `;
 
     const fullMessage = `${systemPrompt}\n${ragInstruction}\n\nUser Question: ${message}`;
 
-    const result = await chat.sendMessage(fullMessage);
-    const response = result.response;
-    const text = response.text();
+    // Stream response to keep UI responsive.
+    const streamResult = await chat.sendMessageStream(fullMessage);
+    const encoder = new TextEncoder();
+    let lastText = "";
 
-    return NextResponse.json({ text });
+    const stream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        try {
+          for await (const chunk of streamResult.stream) {
+            const chunkText = chunk.text();
+            const nextText = chunkText ?? "";
+            const delta = nextText.startsWith(lastText) ? nextText.slice(lastText.length) : nextText;
+            lastText = nextText;
+            if (delta) controller.enqueue(encoder.encode(delta));
+          }
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
+
+    return new NextResponse(stream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+      },
+    });
   } catch (error) {
     console.error("Gemini API Error:", error);
     return NextResponse.json({ error: "Failed to process request" }, { status: 500 });

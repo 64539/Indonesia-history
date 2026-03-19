@@ -4,7 +4,6 @@ import { chapters } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { ArrowRight } from "lucide-react";
 import { getGradeSlug, getYouTubeThumbnail } from "@/lib/utils";
-import { SmartImage } from "@/components/smart-image";
 
 interface ChapterItem {
   slug: string;
@@ -66,16 +65,17 @@ export default async function Home() {
               <Link key={item.slug} href={`/materi/${getGradeSlug(item.grade)}/${item.slug}`} className="group block h-full">
                 <div className="relative h-full overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:border-amber-500/50">
                   <div className="aspect-[16/9] w-full overflow-hidden relative">
-                    {/* YouTube thumbnail with gradient overlay */}
+                    {/* Premium YouTube thumbnail background (published-only content) */}
                     {item.videoUrl && getYouTubeThumbnail(item.videoUrl) ? (
                       <>
-                        <SmartImage
+                        <img
                           src={getYouTubeThumbnail(item.videoUrl)!}
                           alt={item.title}
-                          aspectRatio="video"
-                          className="absolute inset-0"
+                          loading="lazy"
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          style={{ backgroundSize: "cover" }}
                         />
-                        <div className="absolute inset-0 bg-black/60" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                       </>
                     ) : (
                       <>

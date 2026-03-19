@@ -68,12 +68,13 @@ export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSeedingMaster, setIsSeedingMaster] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
 
   // Redirect if not admin
   useEffect(() => {
-    if (!canManageUsers(role as any)) {
+    if (!canManageUsers(role)) {
       router.push("/dashboard")
     }
   }, [role, router])
@@ -106,8 +107,28 @@ export default function UserManagementPage() {
     }
   }
 
+  const handleSeedMasterAdmin = async () => {
+    setIsSeedingMaster(true)
+    try {
+      const res = await fetch("/api/admin/seed-master", { method: "POST" })
+      const data = (await res.json()) as { error?: string; success?: boolean }
+
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal menyiapkan Master Admin")
+      }
+
+      toast.success("Master Admin berhasil disiapkan.")
+      fetchUsers()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Gagal menyiapkan Master Admin"
+      toast.error(message)
+    } finally {
+      setIsSeedingMaster(false)
+    }
+  }
+
   useEffect(() => {
-    if (canManageUsers(role as any)) {
+    if (canManageUsers(role)) {
       fetchUsers()
     }
   }, [searchTerm, role])
@@ -142,7 +163,7 @@ export default function UserManagementPage() {
     }
   }
 
-  if (!canManageUsers(role as any)) {
+  if (!canManageUsers(role)) {
     return null // Or loading spinner while redirecting
   }
 
@@ -157,14 +178,24 @@ export default function UserManagementPage() {
               Kelola akun Admin dan Guru.
             </p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-amber-600 hover:bg-amber-700">
-                <Plus className="mr-2 h-4 w-4" />
-                Tambah User
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSeedMasterAdmin}
+                disabled={isSeedingMaster}
+                className="hidden sm:inline-flex border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+              >
+                {isSeedingMaster ? "Menyiapkan..." : "Seed Master Admin"}
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-amber-600 hover:bg-amber-700">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Tambah User
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>Tambah User Baru</DialogTitle>
                 <DialogDescription>
@@ -243,8 +274,9 @@ export default function UserManagementPage() {
                   </Button>
                 </form>
               </Form>
-            </DialogContent>
-          </Dialog>
+                </DialogContent>
+              </Dialog>
+            </div>
         </div>
         <Separator className="my-6" />
 

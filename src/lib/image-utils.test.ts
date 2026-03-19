@@ -12,22 +12,22 @@ const mockCanvas = {
 }
 
 const mockImage = {
-  onload: null as any,
-  onerror: null as any,
+  onload: null as (() => void) | null,
+  onerror: null as (() => void) | null,
   src: '',
 }
 
 // Mock DOM APIs
 global.document = {
   createElement: vi.fn(() => mockCanvas),
-} as any
+} as unknown as Document
 
-global.Image = vi.fn(() => mockImage) as any
+global.Image = vi.fn(() => mockImage) as unknown as typeof Image
 
 global.URL = {
   createObjectURL: vi.fn(() => 'mock-url'),
   revokeObjectURL: vi.fn(),
-} as any
+} as unknown as typeof URL
 
 describe('Image Utils', () => {
   beforeEach(() => {

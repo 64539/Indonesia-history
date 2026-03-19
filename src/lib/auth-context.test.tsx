@@ -45,7 +45,7 @@ describe.skip("AuthProvider", () => {
       cookieStore.value = "user-role=admin"
       
       // Mock fetch returning 401
-      (global.fetch as any).mockResolvedValue({
+      (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
         status: 401,
         json: async () => ({ error: "Unauthorized" }),
@@ -66,7 +66,7 @@ describe.skip("AuthProvider", () => {
     it("handles successful user fetch", async () => {
       cookieStore.value = "user-role=admin"
       
-      (global.fetch as any).mockResolvedValue({
+      (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => ({ name: "Test User" }),

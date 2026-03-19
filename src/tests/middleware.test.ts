@@ -27,7 +27,7 @@ describe('Middleware', () => {
       nextUrl: { pathname: '/dashboard' },
       url: 'http://localhost:3000/dashboard',
       cookies: { get: vi.fn().mockReturnValue(undefined) }, // No token
-    } as any;
+    } as unknown as NextRequest;
 
     middleware(request);
 
@@ -49,7 +49,7 @@ describe('Middleware', () => {
           return undefined;
         }),
       },
-    } as any;
+    } as unknown as NextRequest;
 
     middleware(request);
 
@@ -66,7 +66,7 @@ describe('Middleware', () => {
           return undefined;
         }),
       },
-    } as any;
+    } as unknown as NextRequest;
 
     middleware(request);
 
@@ -82,7 +82,7 @@ describe('Middleware', () => {
         nextUrl: { pathname: '/api/chat' },
         url: 'http://localhost:3000/api/chat',
         cookies: { get: vi.fn().mockReturnValue(undefined) }, // No token
-    } as any;
+    } as unknown as NextRequest;
 
     middleware(request);
 
@@ -102,7 +102,7 @@ describe('Middleware', () => {
               return undefined;
             }),
         },
-    } as any;
+    } as unknown as NextRequest;
 
     middleware(request);
 

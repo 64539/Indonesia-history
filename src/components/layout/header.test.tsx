@@ -13,8 +13,8 @@ vi.mock("@/components/mode-toggle", () => ({
   ModeToggle: () => <div data-testid="mode-toggle">ModeToggle</div>,
 }))
 
-vi.mock("@/components/command-menu", () => ({
-  CommandMenu: () => <div data-testid="command-menu">CommandMenu</div>,
+vi.mock("@/components/search/material-search-bar", () => ({
+  MaterialSearchBar: () => <div data-testid="material-search-bar">MaterialSearchBar</div>,
 }))
 
 vi.mock("@/components/layout/sidebar", () => ({
@@ -62,7 +62,7 @@ describe("Header", () => {
     expect(screen.getByText("Guest Mode")).toBeTruthy()
     expect(screen.getByText("Login")).toBeTruthy()
     expect(screen.getByTestId("mode-toggle")).toBeTruthy()
-    expect(screen.getByTestId("command-menu")).toBeTruthy()
+    expect(screen.getByTestId("material-search-bar")).toBeTruthy()
   })
 
   it("renders correctly when authenticated", () => {

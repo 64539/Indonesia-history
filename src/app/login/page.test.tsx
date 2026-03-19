@@ -42,7 +42,7 @@ describe("LoginPage", () => {
   })
 
   it("handles successful login", async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       headers: { get: () => "application/json" },
       json: async () => ({ role: "admin", name: "Admin User" }),
@@ -62,7 +62,7 @@ describe("LoginPage", () => {
   })
 
   it("handles login failure", async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: false,
       headers: { get: () => "application/json" },
       json: async () => ({ error: "Invalid credentials" }),
@@ -80,7 +80,7 @@ describe("LoginPage", () => {
   })
   
   it("handles network error", async () => {
-    (global.fetch as any).mockRejectedValueOnce(new TypeError("Failed to fetch"))
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new TypeError("Failed to fetch"))
 
     render(<LoginPage />)
 

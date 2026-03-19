@@ -8,15 +8,18 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import type { ChatMessage } from "@/types/chat"
 
 export function AiChatbot() {
   const { isAuthenticated } = useAuth()
   const [isOpen, setIsOpen] = React.useState(false)
-  const [messages, setMessages] = React.useState<{ role: "user" | "bot"; content: string }[]>([
+  const [messages, setMessages] = React.useState<ChatMessage[]>([
     { role: "bot", content: "Halo! Saya adalah Sejarawan AI. Ada yang ingin ditanyakan tentang Sejarah Indonesia?" }
   ])
   const [input, setInput] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
+  const [hasStartedStreaming, setHasStartedStreaming] = React.useState(false)
+  const hasStartedStreamingRef = React.useRef(false)
   const scrollRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
@@ -34,10 +37,14 @@ export function AiChatbot() {
     const userMessage = input.trim()
     setInput("")
     
-    // Optimistically update UI
-    const newMessages = [...messages, { role: "user" as const, content: userMessage }]
-    setMessages(newMessages)
+    // Optimistically update UI (add an empty assistant bubble, then stream into it)
+    const historyMessages = messages
+    const nextUserMessages = [...historyMessages, { role: "user" as const, content: userMessage }]
+    const botMessageIndex = nextUserMessages.length
+    setMessages([...nextUserMessages, { role: "bot" as const, content: "" }])
     setIsLoading(true)
+    setHasStartedStreaming(false)
+    hasStartedStreamingRef.current = false
 
     try {
       const response = await fetch("/api/chat", {
@@ -45,29 +52,52 @@ export function AiChatbot() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           message: userMessage,
-          history: messages // Send previous messages as context
+          history: historyMessages // Send previous messages as context
         }),
       })
-      
-      let data;
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error(`Failed to parse response: ${response.statusText}`);
-      }
 
       if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`)
+        const errorBody = (await response.json()) as { error?: string }
+        const fallback =
+          errorBody.error || "Maaf, terjadi gangguan pada server atau koneksi. Silakan coba lagi nanti."
+        setMessages((prev) =>
+          prev.map((m, idx) => (idx === botMessageIndex ? { ...m, content: fallback } : m)),
+        )
+        return
       }
-      
-      if (data.text) {
-        setMessages((prev) => [...prev, { role: "bot", content: data.text }])
-      } else {
-         setMessages((prev) => [...prev, { role: "bot", content: "Maaf, saya tidak dapat memproses jawaban saat ini." }])
+
+      const body = response.body
+      if (!body) {
+        setMessages((prev) =>
+          prev.map((m, idx) =>
+            idx === botMessageIndex ? { ...m, content: "Maaf, respons AI kosong." } : m,
+          ),
+        )
+        return
+      }
+
+      const reader = body.getReader()
+      const decoder = new TextDecoder()
+      let accumulatedText = ""
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+
+        accumulatedText += decoder.decode(value, { stream: true })
+        if (!hasStartedStreamingRef.current && accumulatedText.length > 0) {
+          hasStartedStreamingRef.current = true
+          setHasStartedStreaming(true)
+        }
+
+        setMessages((prev) =>
+          prev.map((m, idx) => (idx === botMessageIndex ? { ...m, content: accumulatedText } : m)),
+        )
       }
     } catch (error) {
       console.error(error)
-      setMessages((prev) => [...prev, { role: "bot", content: "Maaf, terjadi gangguan pada server atau koneksi. Silakan coba lagi nanti." }])
+      const fallback = "Maaf, terjadi gangguan pada server atau koneksi. Silakan coba lagi nanti."
+      setMessages((prev) => prev.map((m, idx) => (idx === botMessageIndex ? { ...m, content: fallback } : m)))
     } finally {
       setIsLoading(false)
     }
@@ -118,7 +148,7 @@ export function AiChatbot() {
                       {msg.content}
                     </div>
                   ))}
-                  {isLoading && (
+                  {isLoading && !hasStartedStreaming && (
                     <div className="flex w-max max-w-[85%] items-center gap-2 rounded-2xl bg-stone-900 text-stone-100 border border-amber-500/10 px-3.5 py-2.5 text-sm">
                       <span className="inline-flex gap-1">
                         <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80 animate-bounce [animation-delay:-0.2s]" />

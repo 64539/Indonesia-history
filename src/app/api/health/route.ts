@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { testDbConnection } from "@/lib/db"
 
 export async function GET() {
-  let aiRes: { status: "fulfilled" | "rejected"; value?: boolean; reason?: any } = { 
+  let aiRes: { status: "fulfilled" | "rejected"; value?: boolean; reason?: unknown } = { 
     status: "fulfilled", 
     value: false 
   }

@@ -86,7 +86,15 @@ interface MateriFormProps {
 export function MateriForm({ initialData }: MateriFormProps) {
   const router = useRouter()
   const [timelineItems, setTimelineItems] = useState(initialData?.timeline || [{ year: "", title: "", description: "" }])
-  const [artifacts, setArtifacts] = useState(initialData?.artifacts || [])
+  type ArtifactDraft = {
+    name: string
+    image: string
+    description: string
+    year?: string
+    origin?: string
+  }
+
+  const [artifacts, setArtifacts] = useState<ArtifactDraft[]>(initialData?.artifacts || [])
   const [previewOpen, setPreviewOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -167,9 +175,13 @@ export function MateriForm({ initialData }: MateriFormProps) {
   }
 
   const updateArtifact = (index: number, field: "name" | "image" | "description" | "year" | "origin", value: string) => {
-    const next = [...(artifacts || [])]
-    ;(next[index] as any)[field] = value
-    setArtifacts(next)
+    setArtifacts((prev) => {
+      const next = [...prev]
+      const current = next[index]
+      if (!current) return prev
+      next[index] = { ...current, [field]: value }
+      return next
+    })
   }
 
   return (

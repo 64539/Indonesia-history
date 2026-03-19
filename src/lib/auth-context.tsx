@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-
-type UserRole = "guest" | "guru" | "admin" | "teacher" | "student"
+import type { UserRole } from "@/lib/rbac"
 
 interface AuthContextType {
   role: UserRole
@@ -101,16 +100,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = React.useContext(AuthContext)
   if (context === undefined) {
     return {
       role: "guest",
-      setRole: () => {},
+      setRole: (_role: UserRole) => {},
       isAuthenticated: false,
       logout: () => {},
       userName: null,
-      setUserName: () => {},
+      setUserName: (_name: string | null) => {},
     }
   }
   return context
