@@ -112,7 +112,7 @@ export function AiChatbot() {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-20 right-4 z-50 w-[360px] overflow-hidden rounded-xl border border-amber-500/30 bg-stone-950 shadow-2xl shadow-black/40 sm:right-8"
+            className="fixed bottom-20 right-4 z-50 w-[360px] overflow-hidden rounded-xl border border-amber-500/50 bg-black/80 backdrop-blur-xl shadow-2xl shadow-black sm:right-8"
           >
             <div className="flex items-center justify-between bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 p-4 text-stone-50 border-b border-amber-500/20">
               <div className="flex items-center gap-2">
@@ -142,8 +142,8 @@ export function AiChatbot() {
                       className={cn(
                         "flex w-max max-w-[85%] flex-col gap-2 rounded-2xl px-3.5 py-2.5 text-sm break-words whitespace-pre-wrap leading-relaxed shadow-sm",
                         msg.role === "user"
-                          ? "ml-auto bg-amber-900/40 text-amber-50 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
-                          : "bg-stone-900/90 text-stone-50 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]"
+                          ? "ml-auto bg-amber-900/40 backdrop-blur-md text-amber-50 border border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+                          : "bg-black/60 backdrop-blur-md text-amber-50 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
                       )}
                     >
                       <div className="prose prose-sm prose-stone dark:prose-invert max-w-none break-words">

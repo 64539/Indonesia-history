@@ -11,7 +11,7 @@ export function DashboardLayout({ children, items }: { children: React.ReactNode
   return (
     <div className={cn(
       "container flex-1 items-start md:grid md:gap-6 lg:gap-10 transition-all duration-300",
-      sidebarOpen ? "md:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)]" : "md:grid-cols-[0px_minmax(0,1fr)]"
+      sidebarOpen ? "md:grid-cols-[38.2%_minmax(0,1fr)]" : "md:grid-cols-[0px_minmax(0,1fr)]"
     )}>
       <aside 
         className={cn(

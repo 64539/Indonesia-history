@@ -8,9 +8,9 @@ const sql = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql, { schema });
 
 const ADMIN_ID = "admin";
-const ADMIN_EMAIL = "admin@ruangwaktu12.id";
+const ADMIN_EMAIL = "admin@museum.id";
 const ADMIN_NAME = "Master Admin";
-const ADMIN_PASSWORD = "Admin-ruang-waktu-2311";
+const ADMIN_PASSWORD = "AdminMuseum2026!";
 
 async function main() {
   console.log("Seeding Master Admin...");

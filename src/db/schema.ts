@@ -13,7 +13,7 @@ export const chapters = pgTable("chapters", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
-  grade: text("grade").notNull(), // 'Kelas 10', 'Kelas 11', 'Kelas 12'
+  grade: text("grade").notNull(), // 'Kelas 10', 'Kelas 11', 
   content: text("content").notNull(), // JSON string: { theory: "markdown", artifacts: [...] }
   videoUrl: text("video_url"),
   estimatedTime: integer("estimated_time").default(10), // in minutes

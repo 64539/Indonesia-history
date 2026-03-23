@@ -76,8 +76,8 @@ export function Header({ items, sidebarOpen, setSidebarOpen }: HeaderProps) {
 
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="hidden font-bold sm:inline-block font-serif text-lg">
-              Indonesian History
+            <span className="hidden font-bold sm:inline-block font-serif text-lg text-amber-500">
+              RuangWaktu 12
             </span>
           </Link>
           <Breadcrumb>

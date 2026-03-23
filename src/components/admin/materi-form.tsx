@@ -33,7 +33,7 @@ const formSchema = z.object({
   title: z.string().min(2, {
     message: "Judul harus memiliki minimal 2 karakter.",
   }),
-  category: z.enum(["Kelas 10", "Kelas 11", "Kelas 12"]),
+  category: z.enum(["Kelas 10", "Kelas 11"]),
   videoUrl: z.string().url({ message: "Masukkan URL YouTube yang valid." }),
   content: z.string().min(10, {
     message: "Konten materi minimal 10 karakter.",
@@ -102,7 +102,7 @@ export function MateriForm({ initialData }: MateriFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: initialData?.title || "",
-      category: (initialData?.category as "Kelas 10" | "Kelas 11" | "Kelas 12") || "Kelas 10",
+      category: (initialData?.category as "Kelas 10" | "Kelas 11") || "Kelas 10",
       videoUrl: initialData?.videoUrl || "",
       content: initialData?.content || "",
       status: initialData?.status || "Draft",
@@ -221,7 +221,6 @@ export function MateriForm({ initialData }: MateriFormProps) {
                     <SelectContent>
                       <SelectItem value="Kelas 10">Kelas 10</SelectItem>
                       <SelectItem value="Kelas 11">Kelas 11</SelectItem>
-                      <SelectItem value="Kelas 12">Kelas 12</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

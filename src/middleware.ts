@@ -13,6 +13,14 @@ export function middleware(request: NextRequest) {
       console.log(`Middleware: Redirecting from ${pathname} to /login (Role: ${role})`)
       return NextResponse.redirect(new URL("/login", request.url))
     }
+
+    // Strict role-based routing as per requirements
+    if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
+      return NextResponse.redirect(new URL("/dashboard", request.url))
+    }
+    if (pathname.startsWith("/dashboard/teacher") && role !== "teacher" && role !== "guru") {
+      return NextResponse.redirect(new URL("/dashboard", request.url))
+    }
   }
 
   // Protect AI Chatbot API

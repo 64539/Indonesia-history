@@ -48,6 +48,14 @@ export async function POST(req: Request) {
       maxAge: 60 * 60 * 24 * 7,
     })
 
+    // Add user-role cookie for middleware and client components
+    response.cookies.set("user-role", user.role, {
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    })
+
+
     return response
   } catch (error) {
     console.error("Login error:", error)

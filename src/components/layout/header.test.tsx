@@ -58,7 +58,7 @@ describe("Header", () => {
 
   it("renders correctly in guest mode", () => {
     render(<Header />)
-    expect(screen.getByText("Indonesian History")).toBeTruthy()
+    expect(screen.getByText("RuangWaktu 12")).toBeTruthy()
     expect(screen.getByText("Guest Mode")).toBeTruthy()
     expect(screen.getByText("Login")).toBeTruthy()
     expect(screen.getByTestId("mode-toggle")).toBeTruthy()
