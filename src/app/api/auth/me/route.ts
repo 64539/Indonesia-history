@@ -9,7 +9,14 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const cookieStore = await cookies()
-    const userId = cookieStore.get("user-id")?.value
+    const tokenStr = cookieStore.get("auth-token")?.value
+
+    if (!tokenStr) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const token = JSON.parse(tokenStr)
+    const userId = token.id
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

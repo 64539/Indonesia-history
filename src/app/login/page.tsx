@@ -61,17 +61,17 @@ export default function LoginPage() {
 
       // Update context and storage
       if (typeof window !== "undefined") {
-        localStorage.setItem("user-name", data.name || "User")
+        localStorage.setItem("user-name", data.user.name || "User")
       }
       
-      setRole(data.role)
-      setUserName(data.name || "User")
+      setRole(data.user.role)
+      setUserName(data.user.name || "User")
 
       // Refresh to update middleware state / cookies
       router.refresh()
       
       // Redirect based on role
-      if (data.role === "admin" || data.role === "teacher") {
+      if (data.user.role === "admin" || data.user.role === "teacher") {
         router.push("/dashboard")
       } else {
         router.push("/")
