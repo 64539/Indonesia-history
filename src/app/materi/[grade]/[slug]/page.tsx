@@ -131,11 +131,13 @@ export default async function MateriPage({ params }: PageProps) {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 bg-muted/30 rounded-lg border border-dashed">
-              <Box className="w-12 h-12 mx-auto text-muted-foreground mb-4 opacity-50" />
-              <h3 className="text-lg font-medium text-muted-foreground">Belum ada artefak</h3>
-              <p className="text-sm text-muted-foreground/80 mt-1">
-                Koleksi artefak untuk materi ini sedang dikumpulkan.
+            <div className="text-center py-20 border border-amber-500/20 bg-stone-950/50 rounded-xl shadow-inner backdrop-blur-sm">
+              <div className="mx-auto w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 border border-amber-500/20">
+                 <Box className="w-8 h-8 text-amber-500/70" />
+              </div>
+              <h3 className="text-xl font-serif font-medium text-amber-500">Koleksi Belum Tersedia</h3>
+              <p className="text-sm text-stone-400 mt-2 max-w-md mx-auto">
+                Artefak sejarah digital untuk era ini sedang dalam tahap kurasi dan pemugaran oleh tim RuangWaktu 12.
               </p>
             </div>
           )}

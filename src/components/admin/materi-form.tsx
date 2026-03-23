@@ -116,7 +116,7 @@ export function MateriForm({ initialData }: MateriFormProps) {
     try {
       const content = JSON.stringify({
         theory: values.content,
-        artifacts: values.artifacts || [],
+        artifacts: artifacts || [],
       })
       const payload = { 
         title: values.title,
