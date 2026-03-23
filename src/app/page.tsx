@@ -43,8 +43,8 @@ export default async function Home() {
   return (
     <div className="container py-10 space-y-20">
       <section className="text-center space-y-6">
-        <h1 className="font-serif text-5xl font-bold tracking-tight lg:text-7xl text-amber-500">
-          Digital Museum
+        <h1 className="font-serif text-5xl font-bold tracking-tight lg:text-7xl bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-amber-200">
+          RuangWaktu 12
         </h1>
         <p className="text-2xl text-muted-foreground max-w-3xl mx-auto font-serif italic">
           &quot;Menelusuri jejak waktu, merawat ingatan bangsa.&quot;
@@ -68,19 +68,16 @@ export default async function Home() {
                     {/* Premium YouTube thumbnail background (published-only content) */}
                     {item.videoUrl && getYouTubeThumbnail(item.videoUrl) ? (
                       <>
-                        <img
-                          src={getYouTubeThumbnail(item.videoUrl)!}
-                          alt={item.title}
-                          loading="lazy"
-                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          style={{ backgroundSize: "cover" }}
+                        <div
+                          className="absolute inset-0 h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                          style={{ backgroundImage: `url(${getYouTubeThumbnail(item.videoUrl)})` }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                        <div className="absolute inset-0 bg-black/60" />
                       </>
                     ) : (
                       <>
                         <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-stone-900/80" />
-                        <div className="absolute inset-0 bg-stone-800/50 animate-pulse" />
+                        <div className="absolute inset-0 bg-black/60 animate-pulse" />
                       </>
                     )}
                     

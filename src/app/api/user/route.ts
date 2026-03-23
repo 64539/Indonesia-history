@@ -91,6 +91,9 @@ export async function POST(req: Request) {
             role,
         })
 
+        const { revalidatePath } = await import("next/cache");
+        revalidatePath("/dashboard/users");
+
         return NextResponse.json({ success: true, id: newId })
 
     } catch (error) {

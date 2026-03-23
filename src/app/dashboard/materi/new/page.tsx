@@ -11,7 +11,7 @@ export default function NewMateriPage() {
           <div>
             <h2 className="text-2xl font-serif font-bold tracking-tight text-amber-500">Tambah Materi Baru</h2>
             <p className="text-muted-foreground">
-              Buat konten sejarah baru untuk museum digital.
+              Buat konten sejarah baru untuk RuangWaktu 12.
             </p>
           </div>
         </div>

@@ -8,13 +8,14 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import ReactMarkdown from "react-markdown"
 import type { ChatMessage } from "@/types/chat"
 
 export function AiChatbot() {
   const { isAuthenticated } = useAuth()
   const [isOpen, setIsOpen] = React.useState(false)
   const [messages, setMessages] = React.useState<ChatMessage[]>([
-    { role: "bot", content: "Halo! Saya adalah Sejarawan AI. Ada yang ingin ditanyakan tentang Sejarah Indonesia?" }
+    { role: "bot", content: "Halo! Saya adalah Asisten RuangWaktu 12. Ada yang ingin ditanyakan tentang Sejarah Indonesia?" }
   ])
   const [input, setInput] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
@@ -119,7 +120,7 @@ export function AiChatbot() {
                   <Bot className="h-4 w-4" />
                 </div>
                 <div className="leading-tight">
-                  <h3 className="font-serif font-semibold text-amber-400">Asisten Museum</h3>
+                  <h3 className="font-serif font-semibold text-amber-400">Asisten RuangWaktu 12</h3>
                   <p className="text-xs text-stone-400">Sejarah Indonesia • Gemini</p>
                 </div>
               </div>
@@ -141,11 +142,15 @@ export function AiChatbot() {
                       className={cn(
                         "flex w-max max-w-[85%] flex-col gap-2 rounded-2xl px-3.5 py-2.5 text-sm break-words whitespace-pre-wrap leading-relaxed shadow-sm",
                         msg.role === "user"
-                          ? "ml-auto bg-amber-500 text-stone-950"
-                          : "bg-stone-900 text-stone-100 border border-amber-500/10"
+                          ? "ml-auto bg-amber-900/40 text-amber-50 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+                          : "bg-stone-900/90 text-stone-50 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]"
                       )}
                     >
-                      {msg.content}
+                      <div className="prose prose-sm prose-stone dark:prose-invert max-w-none break-words">
+                        <ReactMarkdown>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
                     </div>
                   ))}
                   {isLoading && !hasStartedStreaming && (

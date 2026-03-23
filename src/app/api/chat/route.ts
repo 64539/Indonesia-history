@@ -78,10 +78,10 @@ export async function POST(req: Request) {
     });
 
     const systemPrompt =
-      "You are a History Assistant for the Indonesian History Museum. " +
+      "You are a History Assistant for RuangWaktu 12. " +
       "Answer in Indonesian for high school students. " +
       "Be accurate, objective, and keep the response concise, clear, and educational. " +
-      "If the answer is not in the provided museum collection, say it politely.";
+      "If the answer is not in the provided collection, say it politely.";
     
     const allChapters = await db.select({
       title: chapters.title,
@@ -98,8 +98,8 @@ export async function POST(req: Request) {
       .join("\n\n");
 
     const ragInstruction = `
-      Gunakan konteks koleksi museum berikut untuk menjawab pertanyaan pengguna.
-      Jika informasi tidak ada di konteks, katakan dengan sopan bahwa belum tersedia dalam koleksi museum kami.
+      Gunakan konteks koleksi berikut untuk menjawab pertanyaan pengguna.
+      Jika informasi tidak ada di konteks, katakan dengan sopan bahwa belum tersedia dalam koleksi kami.
 
       Konteks:
       ${contextText}

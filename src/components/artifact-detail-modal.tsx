@@ -92,7 +92,7 @@ export function ArtifactDetailModal({ artifact, open, onOpenChange }: ArtifactDe
                 <div className="mt-8 pt-6 border-t border-stone-700">
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-stone-500">
-                      Koleksi Museum Sejarah Indonesia
+                      Koleksi RuangWaktu 12
                     </p>
                     <button
                       onClick={() => onOpenChange(false)}

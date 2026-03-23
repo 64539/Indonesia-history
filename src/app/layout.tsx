@@ -18,7 +18,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Indonesian History - Digital Museum",
+  title: "RuangWaktu 12",
   description: "A cinematic educational website for Indonesian History (Grades 10-12).",
 };
 

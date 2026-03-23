@@ -16,7 +16,7 @@ export default function NotFound() {
       </p>
       <Link href="/">
         <Button className="bg-amber-600 hover:bg-amber-700 text-white">
-          Kembali ke Lobi Museum
+          Kembali ke Lobi Utama
         </Button>
       </Link>
     </div>

@@ -38,7 +38,7 @@ export default async function MateriPage({ params }: PageProps) {
           Konten Sedang Dikurasi
         </h1>
         <p className="text-muted-foreground text-lg mb-8">
-          Artefak digital ini sedang dalam proses pemugaran oleh tim museum kami.
+          Artefak digital ini sedang dalam proses pemugaran oleh tim RuangWaktu 12 kami.
           Silakan kembali lagi nanti.
         </p>
         <div className="w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />

@@ -46,7 +46,7 @@ export default async function DashboardPage() {
           <div>
             <h2 className="text-2xl font-serif font-bold tracking-tight text-amber-500">Dashboard Statistik</h2>
             <p className="text-muted-foreground">
-              Ringkasan aktivitas dan konten museum digital.
+              Ringkasan aktivitas dan konten RuangWaktu 12.
             </p>
           </div>
         </div>

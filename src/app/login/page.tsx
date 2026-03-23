@@ -96,7 +96,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 rounded-xl border bg-card p-8 shadow-lg">
         <div className="text-center">
           <h2 className="font-serif text-3xl font-bold tracking-tight text-amber-500">
-            Masuk ke Museum
+            Masuk ke RuangWaktu 12
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Akses materi dan fitur pembelajaran

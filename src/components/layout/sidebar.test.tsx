@@ -26,7 +26,7 @@ vi.mock("@/lib/auth-context", () => ({
 describe("Sidebar", () => {
   it("renders correctly", () => {
     render(<Sidebar />)
-    expect(screen.getByText("Koleksi Museum")).toBeTruthy()
+    expect(screen.getByText("RuangWaktu 12")).toBeTruthy()
     expect(screen.getByText("Lobi Utama")).toBeTruthy()
   })
 

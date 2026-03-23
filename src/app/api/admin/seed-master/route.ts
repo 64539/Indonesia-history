@@ -7,9 +7,9 @@ import { eq, ne } from "drizzle-orm"
 export const dynamic = "force-dynamic"
 
 const ADMIN_ID = "admin"
-const ADMIN_EMAIL = "admin@museum.id"
+const ADMIN_EMAIL = "admin@ruangwaktu12.id"
 const ADMIN_NAME = "Master Admin"
-const ADMIN_PASSWORD = "Admin24434!"
+const ADMIN_PASSWORD = "Admin-ruang-waktu-2311"
 
 // WARNING: This endpoint performs destructive operations (clears users).
 // Only allow it automatically in non-production environments.

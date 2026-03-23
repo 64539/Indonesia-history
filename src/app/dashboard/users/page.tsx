@@ -225,7 +225,7 @@ export default function UserManagementPage() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="user@museum.id" {...field} />
+                          <Input placeholder="user@ruangwaktu12.id" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
