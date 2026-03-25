@@ -18,8 +18,12 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "RuangWaktu 12",
-  description: "A cinematic educational website for Indonesian History (Grades 10-12).",
+  title: {
+    default: "RUANG WAKTU 12",
+    template: "%s | RUANG WAKTU 12",
+  },
+  description: "Platform edukasi Sejarah Indonesia kelas 10–12. Menelusuri jejak waktu, merawat ingatan bangsa.",
+  keywords: ["sejarah indonesia", "ruang waktu 12", "edukasi sma", "materi sejarah"],
 };
 
 export default function RootLayout({
