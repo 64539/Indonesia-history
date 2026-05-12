@@ -36,7 +36,7 @@ export default function SettingsPage() {
       const res = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name }),
+        body: JSON.stringify({ name }),
       })
       
       const data = await res.json()

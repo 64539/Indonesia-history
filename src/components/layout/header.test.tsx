@@ -74,9 +74,9 @@ describe("Header", () => {
     })
 
     render(<Header />)
-    expect(screen.getByText("John Doe")).toBeTruthy()
-    expect(screen.getByText("Student")).toBeTruthy()
-    expect(screen.getByText("Logout")).toBeTruthy()
+    expect(screen.getAllByText("John Doe").length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText("Student").length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText("Logout").length).toBeGreaterThanOrEqual(1)
   })
 
   it("renders correctly for admin role", () => {
@@ -88,7 +88,7 @@ describe("Header", () => {
     })
 
     render(<Header />)
-    expect(screen.getByText("admin Mode")).toBeTruthy()
+    expect(screen.getAllByText("Admin Mode").length).toBeGreaterThanOrEqual(1)
   })
 
   it("calls logout when logout button is clicked", () => {

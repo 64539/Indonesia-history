@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, Users, Eye, TrendingUp } from "lucide-react"
 import { db } from "@/lib/db"
 import { chapters, users } from "@/db/schema"
+import { isNull } from "drizzle-orm"
 
 export default async function DashboardPage() {
   // Fetch statistics
-  const totalMateri = await db.$count(chapters);
+  const totalMateri = await db.$count(chapters, isNull(chapters.deletedAt));
   const totalUsers = await db.$count(users);
   
   // Mock statistics for now

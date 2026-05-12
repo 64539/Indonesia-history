@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { users, chapters } from "@/db/schema"
 import { eq, ne } from "drizzle-orm"
+import { requireAdminSession, StaffAuthError } from "@/lib/session"
 
 export const dynamic = "force-dynamic"
 
@@ -19,11 +20,12 @@ function isSeedAllowed() {
 }
 
 export async function POST() {
-  if (!isSeedAllowed()) {
-    return NextResponse.json({ error: "Seeding not allowed in production." }, { status: 403 })
-  }
-
   try {
+    await requireAdminSession()
+
+    if (!isSeedAllowed()) {
+      return NextResponse.json({ error: "Seeding not allowed in production." }, { status: 403 })
+    }
     const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10)
 
     await db.transaction(async (tx) => {
@@ -56,6 +58,9 @@ export async function POST() {
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    if (error instanceof StaffAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     console.error("Seed master admin error:", error)
     return NextResponse.json({ error: "Failed to seed master admin" }, { status: 500 })
   }

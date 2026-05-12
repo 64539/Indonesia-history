@@ -25,6 +25,7 @@ interface Chapter {
   status: string
   updatedAt: Date
   slug: string
+  deletedAt: Date | null
 }
 
 interface MateriTableProps {
@@ -38,7 +39,7 @@ export function MateriTable({ data }: MateriTableProps) {
     try {
       const result = await deleteMateri(id)
       if (result.success) {
-        toast.success("Materi berhasil dihapus")
+        toast.success("Materi telah diarsipkan (soft delete)")
         router.refresh()
       } else {
         toast.error("Gagal menghapus materi")
@@ -100,17 +101,28 @@ export function MateriTable({ data }: MateriTableProps) {
               <TableCell className="font-medium">{item.title}</TableCell>
               <TableCell>{item.grade}</TableCell>
               <TableCell>
-                <Badge variant={item.status === "Published" ? "default" : "secondary"} className={item.status === "Published" ? "bg-green-600" : ""}>
-                  {item.status}
-                </Badge>
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant={item.status === "Published" ? "default" : "secondary"} className={item.status === "Published" ? "bg-green-600" : ""}>
+                    {item.status}
+                  </Badge>
+                  {item.deletedAt ? (
+                    <Badge variant="destructive" className="text-xs">Dihapus</Badge>
+                  ) : null}
+                </div>
               </TableCell>
               <TableCell>{new Date(item.updatedAt).toLocaleDateString("id-ID")}</TableCell>
               <TableCell className="text-right space-x-2">
-                <Button variant="ghost" size="icon" asChild>
-                  <Link href={`/materi/${getGradeSlug(item.grade)}/${item.slug}`}>
-                    <Eye className="h-4 w-4" />
-                  </Link>
-                </Button>
+                {item.deletedAt ? (
+                  <Button variant="ghost" size="icon" disabled title="Pratinjau publik tidak tersedia untuk materi yang dihapus">
+                    <Eye className="h-4 w-4 opacity-40" />
+                  </Button>
+                ) : (
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link href={`/materi/${getGradeSlug(item.grade)}/${item.slug}`}>
+                      <Eye className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                )}
                 <Button variant="ghost" size="icon" asChild>
                   <Link href={`/dashboard/materi/edit/${item.id}`}>
                     <Edit className="h-4 w-4 text-amber-500" />
@@ -119,14 +131,14 @@ export function MateriTable({ data }: MateriTableProps) {
                 
                 <ConfirmModal
                   trigger={
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" disabled={!!item.deletedAt}>
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   }
-                  title="Hapus Materi?"
-                  description="Tindakan ini tidak dapat dibatalkan. Materi akan dihapus secara permanen dari database."
+                  title="Arsipkan materi?"
+                  description="Materi akan disembunyikan dari siswa dan dari asisten AI. Slug dapat dipakai lagi untuk materi baru. Anda masih dapat mengedit lewat dashboard."
                   onConfirm={() => handleDelete(item.id)}
-                  confirmText="Hapus"
+                  confirmText="Arsipkan"
                   variant="destructive"
                   />
               </TableCell>

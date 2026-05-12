@@ -38,7 +38,7 @@ const formSchema = z.object({
   content: z.string().min(10, {
     message: "Konten materi minimal 10 karakter.",
   }),
-  status: z.enum(["Draft", "Published"]).optional(),
+  status: z.enum(["Draft", "Published", "Archived"]).optional(),
   artifacts: z.array(
     z.object({
       name: z.string().min(1),
@@ -67,7 +67,7 @@ interface MateriFormProps {
     category: string
     videoUrl: string
     content: string
-    status?: "Draft" | "Published"
+    status?: "Draft" | "Published" | "Archived"
     artifacts?: {
       name: string
       image: string
@@ -346,10 +346,11 @@ export function MateriForm({ initialData }: MateriFormProps) {
                   <SelectContent>
                     <SelectItem value="Draft">Draft</SelectItem>
                     <SelectItem value="Published">Published</SelectItem>
+                    <SelectItem value="Archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Hanya konten berstatus Published yang tampil di UI publik.
+                  Hanya konten berstatus Published yang tampil di UI publik dan dipakai asisten AI. Archived menyembunyikan dari publik.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

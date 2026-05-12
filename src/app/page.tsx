@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import { chapters } from "@/db/schema";
-import { desc, eq, or } from "drizzle-orm";
+import { desc, isNull } from "drizzle-orm";
+import { publicChapterVisibility } from "@/lib/chapter-visibility";
+import { getSessionFromCookies } from "@/lib/session";
 import { ArrowRight, Lock } from "lucide-react";
 import { getGradeSlug, getYouTubeThumbnail } from "@/lib/utils";
 
@@ -16,16 +17,16 @@ interface ChapterItem {
 }
 
 export default async function Home() {
-  // ── Server-side role detection (via HttpOnly cookie) ──────────────────────
-  const cookieStore = await cookies();
-  const userRole = cookieStore.get("user-role")?.value ?? "guest";
+  // ── Server-side role from session (DB-backed), not forgeable user-role cookie
+  const session = await getSessionFromCookies();
+  const userRole = session?.role ?? "guest";
   const isAdmin = userRole === "admin";
   const canSeeAll = isAdmin || userRole === "guru" || userRole === "teacher";
 
   let chaptersData: ChapterItem[] = [];
   try {
     if (canSeeAll) {
-      // Admin / Guru: see ALL chapters including Draft
+      // Admin / Guru: see all non-deleted chapters (Draft / Published / Archived)
       chaptersData = await db
         .select({
           slug: chapters.slug,
@@ -35,9 +36,10 @@ export default async function Home() {
           status: chapters.status,
         })
         .from(chapters)
+        .where(isNull(chapters.deletedAt))
         .orderBy(desc(chapters.updatedAt));
     } else {
-      // Guest / Student: see Published only
+      // Guest / Student: Published, not soft-deleted
       chaptersData = await db
         .select({
           slug: chapters.slug,
@@ -47,7 +49,7 @@ export default async function Home() {
           status: chapters.status,
         })
         .from(chapters)
-        .where(eq(chapters.status, "Published"))
+        .where(publicChapterVisibility())
         .orderBy(desc(chapters.updatedAt));
     }
   } catch (e) {

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
+import { and, desc, ilike, or, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { chapters } from "@/db/schema"
-import { and, eq, ilike, or } from "drizzle-orm"
+import { publicChapterVisibility } from "@/lib/chapter-visibility"
 
 export const dynamic = "force-dynamic"
 
@@ -22,9 +23,14 @@ export async function GET(req: Request) {
 
     const q = parsed.data.q
     const term = `%${q}%`
+    const vis = publicChapterVisibility()
 
-    // Published-only search for students/guests.
-    const results = await db
+    const ftsMatch = sql`
+      to_tsvector('simple', coalesce(${chapters.title}, '') || ' ' || coalesce(${chapters.content}, ''))
+      @@ plainto_tsquery('simple', ${q})
+    `
+
+    let results = await db
       .select({
         slug: chapters.slug,
         title: chapters.title,
@@ -32,17 +38,39 @@ export async function GET(req: Request) {
         videoUrl: chapters.videoUrl,
       })
       .from(chapters)
-      .where(
-        and(
-          eq(chapters.status, "Published"),
-          or(
-            ilike(chapters.title, term),
-            ilike(chapters.slug, term),
-            ilike(chapters.grade, term),
-          ),
-        ),
+      .where(and(vis, ftsMatch))
+      .orderBy(
+        desc(
+          sql`ts_rank_cd(
+            to_tsvector('simple', coalesce(${chapters.title}, '') || ' ' || coalesce(${chapters.content}, '')),
+            plainto_tsquery('simple', ${q})
+          )`
+        )
       )
       .limit(8)
+
+    if (results.length === 0) {
+      results = await db
+        .select({
+          slug: chapters.slug,
+          title: chapters.title,
+          grade: chapters.grade,
+          videoUrl: chapters.videoUrl,
+        })
+        .from(chapters)
+        .where(
+          and(
+            vis,
+            or(
+              ilike(chapters.title, term),
+              ilike(chapters.slug, term),
+              ilike(chapters.grade, term),
+              ilike(chapters.content, term)
+            )
+          )
+        )
+        .limit(8)
+    }
 
     return NextResponse.json({ results })
   } catch (error) {
@@ -50,4 +78,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ results: [] }, { status: 500 })
   }
 }
-

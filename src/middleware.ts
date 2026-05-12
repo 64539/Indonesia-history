@@ -1,53 +1,48 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { verifyAuthToken } from "@/lib/auth-token";
 
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+export async function middleware(request: NextRequest) {
+  const token = request.cookies.get("auth-token")?.value;
+  const payload = await verifyAuthToken(token);
+  const role = payload?.role ?? null;
+  const { pathname } = request.nextUrl;
 
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get("auth-token")
-  const role = request.cookies.get("user-role")?.value
-  const { pathname } = request.nextUrl
-
-  // Protect Dashboard Routes
+  // Dashboard: verified JWT only (never trust a separate role cookie).
   if (pathname.startsWith("/dashboard")) {
-    if (!token || !role || (role !== "admin" && role !== "guru" && role !== "teacher")) {
-      console.log(`Middleware: Redirecting from ${pathname} to /login (Role: ${role})`)
-      return NextResponse.redirect(new URL("/login", request.url))
+    if (!payload || !role || (role !== "admin" && role !== "guru" && role !== "teacher")) {
+      console.log(`Middleware: Redirecting from ${pathname} to /login (Role: ${role})`);
+      return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // Strict role-based routing as per requirements
     if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     if (pathname.startsWith("/dashboard/teacher") && role !== "teacher" && role !== "guru") {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 
-  // Protect AI Chatbot API
   if (pathname.startsWith("/api/chat")) {
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!payload) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
 
-  // Redirect Login/Register if already authenticated
   if ((pathname === "/login" || pathname === "/register") && token) {
     if (role === "admin" || role === "guru" || role === "teacher") {
-      console.log(`Middleware: Redirecting from ${pathname} to /dashboard (Role: ${role})`)
-      return NextResponse.redirect(new URL("/dashboard", request.url))
+      console.log(`Middleware: Redirecting from ${pathname} to /dashboard (Role: ${role})`);
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    // If student, redirect to home
     if (role === "student") {
-      console.log(`Middleware: Redirecting from ${pathname} to / (Role: ${role})`)
-      return NextResponse.redirect(new URL("/", request.url))
+      console.log(`Middleware: Redirecting from ${pathname} to / (Role: ${role})`);
+      return NextResponse.redirect(new URL("/", request.url));
     }
-    // If token exists but role is missing/invalid, allow access to login page
-    // so user can re-authenticate to fix their session
   }
 
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: ["/dashboard/:path*", "/login", "/register", "/api/chat"],
-}
+};

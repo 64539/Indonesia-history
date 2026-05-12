@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { users } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { cookies } from "next/headers"
+import { verifyAuthToken } from "@/lib/auth-token"
 
 export const dynamic = 'force-dynamic';
 
@@ -10,19 +11,13 @@ export async function GET() {
   try {
     const cookieStore = await cookies()
     const tokenStr = cookieStore.get("auth-token")?.value
+    const claims = await verifyAuthToken(tokenStr)
 
-    if (!tokenStr) {
+    if (!claims?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const token = JSON.parse(tokenStr)
-    const userId = token.id
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1)
+    const userResult = await db.select().from(users).where(eq(users.id, claims.id)).limit(1)
     
     if (!userResult.length) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })

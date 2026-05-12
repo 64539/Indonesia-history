@@ -1,4 +1,14 @@
-import { pgTable, serial, text, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import {
+  pgTable,
+  serial,
+  text,
+  integer,
+  boolean,
+  timestamp,
+  uniqueIndex,
+  index,
+} from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Using text for potential UUID or Auth provider ID
@@ -9,19 +19,33 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const chapters = pgTable("chapters", {
-  id: serial("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
-  title: text("title").notNull(),
-  grade: text("grade").notNull(), // 'Kelas 10', 'Kelas 11', 
-  content: text("content").notNull(), // JSON string: { theory: "markdown", artifacts: [...] }
-  videoUrl: text("video_url"),
-  estimatedTime: integer("estimated_time").default(10), // in minutes
-  authorId: text("author_id").references(() => users.id),
-  status: text("status").default("Draft").notNull(), // 'Draft', 'Published'
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const chapters = pgTable(
+  "chapters",
+  {
+    id: serial("id").primaryKey(),
+    slug: text("slug").notNull(),
+    title: text("title").notNull(),
+    grade: text("grade").notNull(), // 'Kelas 10', 'Kelas 11',
+    content: text("content").notNull(), // JSON string: { theory: "markdown", artifacts: [...] }
+    videoUrl: text("video_url"),
+    estimatedTime: integer("estimated_time").default(10), // in minutes
+    authorId: text("author_id").references(() => users.id),
+    /** Draft | Published | Archived */
+    status: text("status").default("Draft").notNull(),
+    deletedAt: timestamp("deleted_at"),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    slugActiveUnique: uniqueIndex("chapters_slug_active_unique")
+      .on(t.slug)
+      .where(sql`${t.deletedAt} IS NULL`),
+    ftsIdx: index("chapters_fts_idx").using(
+      "gin",
+      sql`to_tsvector('simple', coalesce(${t.title}, '') || ' ' || coalesce(${t.content}, ''))`
+    ),
+  })
+);
 
 export const timelines = pgTable("timelines", {
   id: serial("id").primaryKey(),

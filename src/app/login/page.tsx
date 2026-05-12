@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
+import type { UserRole } from "@/lib/rbac"
 
 const loginSchema = z.object({
   email: z.string().email("Email tidak valid"),
@@ -59,19 +60,24 @@ export default function LoginPage() {
         throw new Error(data.error || "Gagal masuk")
       }
 
+      const user = data.user as { role?: string; name?: string | null } | undefined
+      if (!user?.role) {
+        throw new Error("Respons server tidak valid")
+      }
+
       // Update context and storage
       if (typeof window !== "undefined") {
-        localStorage.setItem("user-name", data.user.name || "User")
+        localStorage.setItem("user-name", user.name || "User")
       }
-      
-      setRole(data.user.role)
-      setUserName(data.user.name || "User")
+
+      setRole(user.role as UserRole)
+      setUserName(user.name || "User")
 
       // Refresh to update middleware state / cookies
       router.refresh()
-      
+
       // Redirect based on role
-      if (data.user.role === "admin" || data.user.role === "teacher") {
+      if (user.role === "admin" || user.role === "teacher" || user.role === "guru") {
         router.push("/dashboard")
       } else {
         router.push("/")

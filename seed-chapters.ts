@@ -51,9 +51,11 @@ async function main() {
   ];
 
   for (const chapter of chaptersToInsert) {
-      await db.insert(schema.chapters).values(chapter).onConflictDoNothing({
-          target: schema.chapters.slug
-      });
+    try {
+      await db.insert(schema.chapters).values(chapter)
+    } catch {
+      // duplicate slug (including soft-deleted row) — skip
+    }
   }
 
   console.log("Chapters Seeded Successfully.");

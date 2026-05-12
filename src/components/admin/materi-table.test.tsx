@@ -59,6 +59,7 @@ const mockData = [
     status: "Published",
     updatedAt: new Date("2024-01-01"),
     slug: "materi-1",
+    deletedAt: null,
   },
   {
     id: 2,
@@ -67,6 +68,7 @@ const mockData = [
     status: "Draft",
     updatedAt: new Date("2024-01-02"),
     slug: "materi-2",
+    deletedAt: null,
   },
 ]
 

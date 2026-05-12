@@ -21,56 +21,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     setIsClient(true)
-    // Check for cookie on mount
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`
-      const parts = value.split(`; ${name}=`)
-      if (parts.length === 2) return parts.pop()?.split(";").shift()
-    }
+    let cancelled = false
 
-    const savedRole = getCookie("user-role") as UserRole
-    if (savedRole && ["admin", "guru", "teacher", "student"].includes(savedRole)) {
-      setRole(savedRole)
-      // Fetch user data from API if logged in
-      fetch("/api/auth/me")
-        .then(res => {
-          if (res.status === 401) {
-            // Token expired or invalid, clear session
+    fetch("/api/auth/me")
+      .then((res) => {
+        if (res.status === 401) {
+          if (!cancelled) {
             setRole("guest")
             setUserName(null)
-            if (isClient) {
-               localStorage.removeItem("user-name")
-               document.cookie = "user-role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
-            }
-            throw new Error("Unauthorized")
+            localStorage.removeItem("user-name")
           }
-          if (!res.ok) throw new Error("Failed to fetch")
-          return res.json()
-        })
-        .then(data => {
-          if (data.name) {
-            setUserName(data.name)
-            if (isClient) localStorage.setItem("user-name", data.name)
-          }
-        })
-        .catch(err => {
-          if (err.message !== "Unauthorized") {
-             console.error("Failed to fetch user data", err)
-             if (!localStorage.getItem("user-name")) {
-                setUserName("User")
-             }
-          }
-        })
-    } else {
-       // If no role cookie, ensure we don't show stale data
-       setUserName(null)
-    }
-    
-    // Fallback to localStorage for immediate display
-    const savedName = localStorage.getItem("user-name")
-    if (savedName) setUserName(savedName)
+          throw new Error("Unauthorized")
+        }
+        if (!res.ok) throw new Error("Failed to fetch")
+        return res.json()
+      })
+      .then((data) => {
+        if (cancelled) return
+        const r = data.role as UserRole
+        if (r && ["admin", "guru", "teacher", "student"].includes(r)) {
+          setRole(r)
+        } else {
+          setRole("guest")
+        }
+        if (data.name) {
+          setUserName(data.name)
+          localStorage.setItem("user-name", data.name)
+        } else {
+          setUserName(null)
+        }
+      })
+      .catch((err) => {
+        if (err.message === "Unauthorized") return
+        if (!cancelled) {
+          console.error("Failed to fetch user data", err)
+          const savedName = localStorage.getItem("user-name")
+          if (savedName) setUserName(savedName)
+        }
+      })
 
-  }, [isClient])
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const logout = async () => {
     try {
@@ -79,9 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUserName(null)
       if (isClient) {
         localStorage.removeItem("user-name")
-        // Clear cookies client-side if possible, or let the server handle it
-        document.cookie = "user-role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
-        window.location.href = "/" 
+        window.location.href = "/"
       }
     } catch (error) {
       console.error("Logout failed", error)
@@ -94,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: role !== "guest",
     logout,
     userName,
-    setUserName
+    setUserName,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

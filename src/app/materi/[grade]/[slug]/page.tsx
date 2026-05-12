@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { chapters, timelines } from "@/db/schema"
 import { and, eq } from "drizzle-orm"
+import { publicChapterVisibility } from "@/lib/chapter-visibility"
 import { VideoPlayer } from "@/components/video-player"
 import { Timeline, TimelineItem } from "@/components/timeline"
 import { Separator } from "@/components/ui/separator"
@@ -22,7 +23,7 @@ export default async function MateriPage({ params }: PageProps) {
   let chapter = null
   let timelineItems: TimelineItem[] = []
   try {
-    const found = await db.select().from(chapters).where(and(eq(chapters.slug, slug), eq(chapters.status, "Published"))).limit(1)
+    const found = await db.select().from(chapters).where(and(eq(chapters.slug, slug), publicChapterVisibility())).limit(1)
     chapter = found.length > 0 ? found[0] : null
     if (chapter) {
       timelineItems = await db.select().from(timelines).where(eq(timelines.chapterId, chapter.id))

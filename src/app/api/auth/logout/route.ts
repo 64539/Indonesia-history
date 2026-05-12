@@ -5,12 +5,14 @@ export async function POST() {
   
   response.cookies.set("auth-token", "", {
     httpOnly: true,
+    sameSite: "lax",
     expires: new Date(0),
     path: "/",
   })
-  
+
   response.cookies.set("user-role", "", {
-    httpOnly: false,
+    httpOnly: true,
+    sameSite: "lax",
     expires: new Date(0),
     path: "/",
   })

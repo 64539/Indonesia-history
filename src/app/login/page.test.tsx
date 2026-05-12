@@ -45,7 +45,10 @@ describe("LoginPage", () => {
     (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       headers: { get: () => "application/json" },
-      json: async () => ({ role: "admin", name: "Admin User" }),
+      json: async () => ({
+        success: true,
+        user: { role: "admin", name: "Admin User" },
+      }),
     })
 
     render(<LoginPage />)

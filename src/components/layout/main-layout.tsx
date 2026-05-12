@@ -1,7 +1,8 @@
 import { SidebarItem } from "@/components/layout/sidebar"
 import { db } from "@/lib/db"
 import { chapters } from "@/db/schema"
-import { desc, eq } from "drizzle-orm"
+import { desc } from "drizzle-orm"
+import { publicChapterVisibility } from "@/lib/chapter-visibility"
 import { SidebarProvider } from "@/components/layout/sidebar-provider"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { HeaderWrapper } from "@/components/layout/header-wrapper"
@@ -15,7 +16,7 @@ export async function MainLayout({ children }: { children: React.ReactNode }) {
        category: chapters.grade,
      })
      .from(chapters)
-     .where(eq(chapters.status, "Published"))
+     .where(publicChapterVisibility())
      .orderBy(desc(chapters.updatedAt));
   } catch (e) {
      console.error("Failed to fetch chapters for sidebar", e);

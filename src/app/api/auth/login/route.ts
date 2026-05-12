@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { users } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
+import { signAuthToken } from "@/lib/auth-token"
 
 export async function POST(req: Request) {
   try {
@@ -36,21 +37,25 @@ export async function POST(req: Request) {
       }
     })
 
-    response.cookies.set("auth-token", JSON.stringify({
+    const jwt = await signAuthToken({
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
-    }), {
+    })
+
+    response.cookies.set("auth-token", jwt, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     })
 
-    // Add user-role cookie for middleware and client components
-    response.cookies.set("user-role", user.role, {
+    response.cookies.set("user-role", user.role ?? "student", {
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     })
